@@ -1,6 +1,18 @@
 ---
-- top: 800
-  left: 200
-  right: 300
-  bottom: 600
-  field: Department
+- name: narrative
+  font: Courier%20New,Bold
+  boxes:
+    - top: 800
+      left: 200
+      right: 300
+      bottom: 600
+      field: Narrative
+- name: entries
+  font: Tahoma,Bold
+  boxes:
+    - top: 800
+      left: 200
+      right: 300
+      bottom: 600
+      field: Department
+
