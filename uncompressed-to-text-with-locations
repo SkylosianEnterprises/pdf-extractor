@@ -1,0 +1,77 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+
+use IO::File;
+
+my $filename = shift @ARGV;
+my $fh = IO::File->new($filename);
+
+my $objects = {};
+
+my $pages_object;
+my $object = 'raw';
+my $STREAM = 0;
+while (<$fh>) {
+  chomp;
+  if (/^endstream/) {
+    $STREAM=0
+  }
+  if ($STREAM) {
+    $objects->{$object}{stream} .= $_;
+  }
+  if (/^([\d ]+) obj\s*$/) {
+    $object = $1;
+    $objects->{$object}{lines} = [];
+    next;
+  }
+  if (/^\/Type \/Pages/) {
+    $pages_object = $object;
+  }
+  if (/^stream/) {
+    $STREAM=1;
+    $objects->{$object}{stream} = '';
+  }
+  push @{$objects->{$object}{lines}}, $_;
+}
+
+my @pages;
+foreach (@{$objects->{$pages_object}->{lines}}) {
+  next unless /^\/Kids/;
+  while (/\s((\w+ \w+) \w+)/g) {
+    push @pages, $2;
+  }
+}
+my @nodes;
+foreach my $pagenum (0..$#pages) {
+  foreach (@{$objects->{$pages[$pagenum]}->{lines}}) {
+    if (/^\/Contents (.+) R/) {
+      my $pagerefs = $1;
+      my @content_objects;
+      while (/\s((\w+ \w+) \w+)/g) {
+        push @content_objects, $2;
+      }
+      foreach my $pageref (@content_objects) {
+        my $stream = $objects->{$pageref}{stream};
+        while ($stream =~ /BT(.+?)ET/g) {
+          my $block = $1;
+          push @nodes, my $nod = { page => $pagenum };
+          while ($block =~ /\s*(.+?)(T[fmjw]|rg)/g) {
+            #my ($font, ) = $1 =~ /([\w ]+?Tf) ( rg) ( Tm) ( Tw) ( \([^)]\)Tj)
+            $nod->{$2} = $1;
+          }
+        }
+      }
+    }
+  }
+}
+print '"filename","page","x","y","text"'."\n";
+foreach (grep { exists $_->{Tj} } @nodes) {
+  my @matrix = split /\s+/, $_->{Tm};
+  my $y = pop @matrix;
+  my $x = pop @matrix;
+  $_->{Tj} =~ s/[()\\]//g;
+  print join ',', map { '"'.$_.'"' } map { s/"/""/g; $_ } $filename, $_->{page}, $x, $y, $_->{Tj};
+  print "\n";
+}

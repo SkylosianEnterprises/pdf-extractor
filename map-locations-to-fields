@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use IO::File;
+use Data::Dumper;
+use YAML qw/LoadFile/;
+
+use Text::CSV;
+
+my @a;
+
+my $datafilename = shift @ARGV;
+
+my $fh = IO::File->new($datafilename);
+
+my $out = IO::Handle->new();
+$out->fdopen(fileno(STDOUT),"w");
+
+my $csv = Text::CSV->new;
+while (<$fh>) {
+  $csv->parse($_);
+  my ($mapfile, $file, $page, $x, $y, $text) = $csv->fields;
+  next unless $mapfile;
+  my $field_name = range_lookup($x, $y, rangemap($mapfile));
+  $csv->print($out, [$file, $page, $x, $y, $text, $field_name]);
+  $out->print("\n");
+}
+
+
+my $maps;
+sub rangemap {
+  my ($mapfile) = @_;
+  return $maps->{$mapfile} if exists $maps->{$mapfile};
+  my ($arrayref) = LoadFile("maps/$mapfile") if -f "maps/$mapfile";
+  $maps->{$mapfile} = $arrayref;
+}
+
+sub range_lookup {
+  my ($x, $y, $map) = @_;
+  foreach (@{$map}) {
+    if ($y >= $_->{bottom} && $y <= $_->{top} && $x >= $_->{left} && $x <= $_->{right}) {
+      return $_->{field};
+    }
+  }
+  return undef;
+}
+
+

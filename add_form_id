@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use IO::File;
+use Data::Dumper;
+
+use Text::CSV;
+
+my @a;
+
+my $datafilename = shift @ARGV;
+
+my $fh = IO::File->new($datafilename);
+
+my $csv = Text::CSV->new;
+my $stat = {};
+my @lines;
+my $page;
+while (<$fh>) {
+  push @lines, $_;
+  $csv->parse($_);
+  my ($file, $page, $x, $y, $text) = $csv->fields;
+  next if $stat->{$file}{$page};
+  my $filename = $text;
+  $filename =~ s/\//-/g;
+  if (-f "maps/". $filename) {
+    $stat->{$file}{$page} = $filename;
+  }
+}
+# its possible to flush the buffer after the end of a page
+
+
+my $out = IO::Handle->new();
+$out->fdopen(fileno(STDOUT),"w");
+foreach (@lines) {
+  $csv->parse($_);
+  my ($file, $page, $x, $y, $text) = $csv->fields;
+  $csv->print($out, [$stat->{$file}{$page}, $file, $page, $x, $y, $text]);
+  $out->print("\n");
+}
+
+

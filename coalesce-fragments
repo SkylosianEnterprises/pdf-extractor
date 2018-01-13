@@ -1,0 +1,37 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use IO::File;
+use Data::Dumper;
+use YAML qw/LoadFile/;
+
+use Text::CSV;
+
+my @a;
+
+my $datafilename = shift @ARGV;
+
+my $fh = IO::File->new($datafilename);
+
+my $out = IO::Handle->new();
+$out->fdopen(fileno(STDOUT),"w");
+
+my $csv = Text::CSV->new;
+my $map = {};
+while (<$fh>) {
+  $csv->parse($_);
+  my ($file, $page, $x, $y, $text, $field_name) = my @row = $csv->fields;
+  push @{$map->{$file}{$page}{$field_name}}, [@row];
+}
+
+foreach my $file (values %{$map}) {
+  foreach my $page (values %{$file}) {
+    foreach my $row (values %{$page}) {
+      my $value = join '', map { $_->[4] } sort { $b->[3] <=> $a->[3] unless $a->[2] <=> $b->[2] } @{$row};
+      $row->[0][4] = $value;
+      $csv->print($out, $row->[0]);
+      $out->print("\n");
+    }
+  }
+}
+
