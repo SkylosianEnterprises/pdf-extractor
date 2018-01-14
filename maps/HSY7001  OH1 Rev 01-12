@@ -1,18 +1,253 @@
 ---
 - name: narrative
-  font: Courier%20New,Bold
+  font: Courier#20New,Bold
   boxes:
-    - top: 800
-      left: 200
-      right: 300
-      bottom: 600
+    - top: 327
+      left: 30
+      right: 305
+      bottom: 102
       field: Narrative
+      separator: " "
 - name: entries
   font: Tahoma,Bold
   boxes:
-    - top: 800
+    - top: 695
+      left: 110
+      right: 370
+      bottom: 670
+      field: City, Village, Township
+    - top: 695
+      left: 70
+      right: 75
+      bottom: 685
+      field: CheckBox City
+    - top: 685
+      left: 70
+      right: 75
+      bottom: 675
+      field: CheckBox Village
+    - top: 675
+      left: 70
+      right: 75
+      bottom: 665
+      field: CheckBox Township
+    - top: 695
+      left: 32
+      right: 75
+      bottom: 670
+      field: County
+    - top: 695
+      left: 370
+      right: 470
+      bottom: 670
+      field: Crash Date
+    - top: 700
+      left: 470
+      right: 540
+      bottom: 670
+      field: Time of Crash
+    - top: 700
+      left: 540
+      right: 800
+      bottom: 670
+      field: Day of Week
+    - top: 723
+      left: 30
+      right: 39
+      bottom: 712
+      field: Checkbox Photos Taken
+    - top: 712
+      left: 30
+      right: 39
+      bottom: 705
+      field: Checkbox OH-2
+    - top: 705
+      left: 30
+      right: 39
+      bottom: 695
+      field: Checkbox OH-3
+    - top: 712
+      left: 34
+      right: 62
+      bottom: 705
+      field: Checkbox OH-1P
+    - top: 705
+      left: 34
+      right: 62
+      bottom: 695
+      field: Checkbox Other
+    - top: 723
+      left: 70
+      right: 89
+      bottom: 713
+      field: Checkbox PDO
+    - top: 723
+      left: 168
+      right: 225
+      bottom: 695
+      field: Reporting Agency NCIC
+    - top: 723
+      left: 111
+      right: 139
+      bottom: 713
+      field: Checkbox Private Property
+    - top: 723
+      left: 450
+      right: 515
+      bottom: 695
+      field: Number of Units
+    - top: 723
+      left: 225
+      right: 450
+      bottom: 695
+      field: Reporting Agency Name
+    - top: 723
+      left: 515
+      right: 545
+      bottom: 695
+      field: Unit in error
+    - top: 762
+      left: 315
+      right: 485
+      bottom: 723
+      field: Local Report Number
+    - top: 762
+      left: 485
+      right: 505
+      bottom: 723
+      field: Crash Severity
+    - top: 762
+      left: 505
+      right: 585
+      bottom: 723
+      field: Hit/Skip
+    - top: 327
+      left: 30
+      right: 305
+      bottom: 102
+      field: Narrative
+- name: labels
+  font: Tahoma
+  boxes: []
+
+  boxess: 
+    - top: 720
       left: 200
       right: 300
       bottom: 600
-      field: Department
-
+      field: Departments
+    - top: 695
+      left: 32
+      right: 75
+      bottom: 670
+      field: CountyLabel
+    - top: 695
+      left: 75
+      right: 110
+      bottom: 685
+      field: CheckCityLabel
+    - top: 685
+      left: 75
+      right: 110
+      bottom: 675
+      field: CheckVillageLabel
+    - top: 675
+      left: 75
+      right: 110
+      bottom: 665
+      field: CheckTownshipLabel
+    - top: 695
+      left: 110
+      right: 370
+      bottom: 670
+      field: City, Village, Township
+    - top: 695
+      left: 370
+      right: 470
+      bottom: 670
+      field: Crash Date
+    - top: 700
+      left: 470
+      right: 540
+      bottom: 670
+      field: Time of Crash
+    - top: 700
+      left: 540
+      right: 800
+      bottom: 670
+      field: Day of Week
+    - top: 723
+      left: 39
+      right: 75
+      bottom: 712
+      field: Checkbox Photos Taken Label
+    - top: 712
+      left: 39
+      right: 55
+      bottom: 705
+      field: Checkbox OH-2 Label
+    - top: 705
+      left: 39
+      right: 55
+      bottom: 695
+      field: Checkbox OH-3 Label
+    - top: 712
+      left: 62
+      right: 75
+      bottom: 705
+      field: Checkbox OH-1P Label
+    - top: 705
+      left: 62
+      right: 75
+      bottom: 695
+      field: Checkbox Other Label
+    - top: 723
+      left: 89
+      right: 125
+      bottom: 713
+      field: Checkbox PDO Label
+    - top: 723
+      left: 168
+      right: 225
+      bottom: 695
+      field: Reporting Agency NCIC Label
+    - top: 723
+      left: 139
+      right: 168
+      bottom: 713
+      field: Checkbox Private Property Label
+    - top: 723
+      left: 225
+      right: 450
+      bottom: 695
+      field: Reporting Agency Name Label
+    - top: 723
+      left: 450
+      right: 515
+      bottom: 695
+      field: Number of Units Label
+    - top: 723
+      left: 515
+      right: 545
+      bottom: 695
+      field: Unit in error Label
+    - top: 762
+      left: 315
+      right: 485
+      bottom: 723
+      field: Local Report Number Label
+    - top: 762
+      left: 485
+      right: 505
+      bottom: 723
+      field: Crash Severity Label
+    - top: 762
+      left: 505
+      right: 585
+      bottom: 723
+      field: Hit/Skip Label
+    - top: 327
+      left: 30
+      right: 305
+      bottom: 102
+      field: Narrative Label

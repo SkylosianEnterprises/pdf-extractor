@@ -21,8 +21,8 @@ while (<$fh>) {
   $csv->parse($_);
   my ($mapfile, $file, $page, $x, $y, $text, $font, $size) = $csv->fields;
   next unless $mapfile;
-  foreach my $field_name (range_lookup($x, $y, $font, $size, rangemap($mapfile))) {
-    $csv->print($out, [$file, $page, $x, $y, $text, $field_name]);
+  foreach my $mapentry (range_lookup($x, $y, $font, $size, rangemap($mapfile))) {
+    $csv->print($out, [$file, $page, $x, $y, $text, $mapentry->{field}, $mapentry->{separator}]);
     $out->print("\n");
   }
 }
@@ -38,14 +38,15 @@ sub rangemap {
 
 sub range_lookup {
   my ($x, $y, $font, $size, $map) = @_;
+  my @matches;
   foreach my $fontmap (grep { $font eq $_->{font} } @{$map}) {
     foreach (@{$fontmap->{boxes}}) {
       if ($y >= $_->{bottom} && $y <= $_->{top} && $x >= $_->{left} && $x <= $_->{right}) {
-        return $_->{field};
+        push @matches, $_;
       }
     }
   }
-  return;
+  return @matches;
 }
 
 

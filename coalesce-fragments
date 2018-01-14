@@ -20,7 +20,7 @@ my $csv = Text::CSV->new;
 my $map = {};
 while (<$fh>) {
   $csv->parse($_);
-  my ($file, $page, $x, $y, $text, $field_name) = my @row = $csv->fields;
+  my ($file, $page, $x, $y, $text, $field_name, $separator) = my @row = $csv->fields;
   push @{$map->{$file}{$page}{$field_name}}, [@row];
 }
 
@@ -28,7 +28,7 @@ foreach my $file (keys %{$map}) {
   foreach my $page (keys %{$map->{$file}}) {
     foreach my $field_name (keys %{$map->{$file}{$page}}) {
       my $rows = $map->{$file}{$page}{$field_name};
-      my $value = join '', map { $_->[4] } sort { $b->[3] <=> $a->[3] unless $a->[2] <=> $b->[2] } @{$rows};
+      my $value = join $rows->[0][6], map { $_->[4] } sort { $b->[3] <=> $a->[3] unless $a->[2] <=> $b->[2] } @{$rows};
       $csv->print($out, [$file, $page, $field_name, $value]);
       $out->print("\n");
     }

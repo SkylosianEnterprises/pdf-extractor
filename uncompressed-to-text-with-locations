@@ -83,7 +83,7 @@ foreach my $font_tag (keys %{$fonts}) {
 my @nodes;
 foreach my $pagenum (0..$#pages) {
   foreach (@{$objects->{$pages[$pagenum]}->{lines}}) {
-    if (/^\/Contents (.+) R/) {
+    if (/^\/Contents (?:\[ )?(.+) R/) {
       my $pagerefs = $1;
       my @content_objects;
       while (/\s((\w+ \w+) \w+)/g) {
@@ -94,8 +94,17 @@ foreach my $pagenum (0..$#pages) {
         while ($stream =~ /BT(.+?)ET/g) {
           my $block = $1;
           push @nodes, my $nod = { page => $pagenum };
+          my $recent = {};
           while ($block =~ /\s*(.+?) ?(T[fmjw]|rg)/g) {
             #my ($font, ) = $1 =~ /([\w ]+?Tf) ( rg) ( Tm) ( Tw) ( \([^)]\)Tj)
+            if (exists $nod->{$2}) {
+              if (exists $recent->{$2} ) {
+                push @nodes, $nod = {%{$nod}};
+                $recent = {};
+              }
+#print "dup $2 ".($nod->{Tj}||'')."\n";
+            }
+            $recent->{$2} = 1;
             $nod->{$2} = $1;
           }
         }
