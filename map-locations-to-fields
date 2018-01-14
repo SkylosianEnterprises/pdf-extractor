@@ -19,30 +19,33 @@ $out->fdopen(fileno(STDOUT),"w");
 my $csv = Text::CSV->new;
 while (<$fh>) {
   $csv->parse($_);
-  my ($mapfile, $file, $page, $x, $y, $text) = $csv->fields;
+  my ($mapfile, $file, $page, $x, $y, $text, $font, $size) = $csv->fields;
   next unless $mapfile;
-  my $field_name = range_lookup($x, $y, rangemap($mapfile));
-  $csv->print($out, [$file, $page, $x, $y, $text, $field_name]);
-  $out->print("\n");
+  foreach my $field_name (range_lookup($x, $y, $font, $size, rangemap($mapfile))) {
+    $csv->print($out, [$file, $page, $x, $y, $text, $field_name]);
+    $out->print("\n");
+  }
 }
 
 
 my $maps;
 sub rangemap {
-  my ($mapfile) = @_;
+  my ($mapfile, $font) = @_;
   return $maps->{$mapfile} if exists $maps->{$mapfile};
   my ($arrayref) = LoadFile("maps/$mapfile") if -f "maps/$mapfile";
   $maps->{$mapfile} = $arrayref;
 }
 
 sub range_lookup {
-  my ($x, $y, $map) = @_;
-  foreach (@{$map}) {
-    if ($y >= $_->{bottom} && $y <= $_->{top} && $x >= $_->{left} && $x <= $_->{right}) {
-      return $_->{field};
+  my ($x, $y, $font, $size, $map) = @_;
+  foreach my $fontmap (grep { $font eq $_->{font} } @{$map}) {
+    foreach (@{$fontmap->{boxes}}) {
+      if ($y >= $_->{bottom} && $y <= $_->{top} && $x >= $_->{left} && $x <= $_->{right}) {
+        return $_->{field};
+      }
     }
   }
-  return undef;
+  return;
 }
 
 

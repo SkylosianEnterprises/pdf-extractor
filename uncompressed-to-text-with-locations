@@ -1,9 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use Data::Dumper;
 
 
 use IO::File;
+use Text::CSV;
+my $csv = Text::CSV->new;
 
 my $filename = shift @ARGV;
 my $fh = IO::File->new($filename);
@@ -11,31 +14,44 @@ my $fh = IO::File->new($filename);
 my $objects = {};
 
 my $pages_object;
+my $fonts;
 my $object = 'raw';
-my $STREAM = 0;
+my $mode = 'other';
 while (<$fh>) {
   chomp;
   if (/^endstream/) {
-    $STREAM=0
+    $mode = 'other'
   }
-  if ($STREAM) {
+  if ($mode eq 'stream') {
     $objects->{$object}{stream} .= $_;
+  }
+  if ($mode eq 'fonts') {
+    if (/^>>/) {
+      $mode = 'other';
+    }
+    my ($ref, $object) = m/^(\/[[:alnum:]]+?) ([\d ]+) R$/;
+    $fonts->{$ref}->{object} = $object if $ref;
+    next;
   }
   if (/^([\d ]+) obj\s*$/) {
     $object = $1;
     $objects->{$object}{lines} = [];
     next;
   }
+  if (/^\/Font <</) {
+    $mode = 'fonts';
+  }
   if (/^\/Type \/Pages/) {
     $pages_object = $object;
   }
   if (/^stream/) {
-    $STREAM=1;
+    $mode='stream';
     $objects->{$object}{stream} = '';
   }
   push @{$objects->{$object}{lines}}, $_;
 }
 
+# extract the page objects from the kids list
 my @pages;
 foreach (@{$objects->{$pages_object}->{lines}}) {
   next unless /^\/Kids/;
@@ -43,6 +59,27 @@ foreach (@{$objects->{$pages_object}->{lines}}) {
     push @pages, $2;
   }
 }
+
+# extract the font names from the font objects
+foreach my $font_tag (keys %{$fonts}) {
+  foreach (@{$objects->{$fonts->{$font_tag}->{object}}->{lines}}) {
+    if (/\/BaseFont \/(.+)$/) {
+      $fonts->{$font_tag}->{name} = $1;
+    }
+  }
+}
+
+# # a font block
+# 631 <<
+# 632 /Type /Font
+# 633 /BaseFont /Arial
+# 634 /Encoding <<
+# 635 /Type /Encoding
+# 636 /BaseEncoding /WinAnsiEncoding
+# 637 /Differences [ 128 /Euro 141 /u008D ]
+# 638 >>
+
+
 my @nodes;
 foreach my $pagenum (0..$#pages) {
   foreach (@{$objects->{$pages[$pagenum]}->{lines}}) {
@@ -57,7 +94,7 @@ foreach my $pagenum (0..$#pages) {
         while ($stream =~ /BT(.+?)ET/g) {
           my $block = $1;
           push @nodes, my $nod = { page => $pagenum };
-          while ($block =~ /\s*(.+?)(T[fmjw]|rg)/g) {
+          while ($block =~ /\s*(.+?) ?(T[fmjw]|rg)/g) {
             #my ($font, ) = $1 =~ /([\w ]+?Tf) ( rg) ( Tm) ( Tw) ( \([^)]\)Tj)
             $nod->{$2} = $1;
           }
@@ -66,12 +103,26 @@ foreach my $pagenum (0..$#pages) {
     }
   }
 }
-print '"filename","page","x","y","text"'."\n";
+
+# output the csv
+my $out = IO::Handle->new();
+$out->fdopen(fileno(STDOUT),"w");
 foreach (grep { exists $_->{Tj} } @nodes) {
   my @matrix = split /\s+/, $_->{Tm};
   my $y = pop @matrix;
   my $x = pop @matrix;
   $_->{Tj} =~ s/[()\\]//g;
-  print join ',', map { '"'.$_.'"' } map { s/"/""/g; $_ } $filename, $_->{page}, $x, $y, $_->{Tj};
-  print "\n";
+  # '/F6 10.0000' Tf
+  my ($font_tag, $font_size) = $_->{Tf} =~ /(\/[[:alnum:]]+) ([\d.]+)/;
+  $csv->print($out, [
+    $filename,
+    $_->{page},
+    $x,
+    $y,
+    $_->{Tj},
+    $fonts->{$font_tag}->{name},
+    $font_size]);
+  $out->print("\n");
 }
+
+

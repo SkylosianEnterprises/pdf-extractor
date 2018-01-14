@@ -24,12 +24,12 @@ while (<$fh>) {
   push @{$map->{$file}{$page}{$field_name}}, [@row];
 }
 
-foreach my $file (values %{$map}) {
-  foreach my $page (values %{$file}) {
-    foreach my $row (values %{$page}) {
-      my $value = join '', map { $_->[4] } sort { $b->[3] <=> $a->[3] unless $a->[2] <=> $b->[2] } @{$row};
-      $row->[0][4] = $value;
-      $csv->print($out, $row->[0]);
+foreach my $file (keys %{$map}) {
+  foreach my $page (keys %{$map->{$file}}) {
+    foreach my $field_name (keys %{$map->{$file}{$page}}) {
+      my $rows = $map->{$file}{$page}{$field_name};
+      my $value = join '', map { $_->[4] } sort { $b->[3] <=> $a->[3] unless $a->[2] <=> $b->[2] } @{$rows};
+      $csv->print($out, [$file, $page, $field_name, $value]);
       $out->print("\n");
     }
   }

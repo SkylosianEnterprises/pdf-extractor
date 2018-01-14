@@ -34,9 +34,10 @@ my $out = IO::Handle->new();
 $out->fdopen(fileno(STDOUT),"w");
 foreach (@lines) {
   $csv->parse($_);
-  my ($file, $page, $x, $y, $text) = $csv->fields;
-  $csv->print($out, [$stat->{$file}{$page}, $file, $page, $x, $y, $text]);
-  $out->print("\n");
+  my ($file, $page, $x, $y, $text, $font, $size) = my @row = $csv->fields;
+  if (exists $stat->{$file}{$page}) {
+    $csv->print($out, [$stat->{$file}{$page}, @row]);
+    $out->print("\n");
+  }
 }
-
 
